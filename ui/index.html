@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>core · 对话</title>
+<link rel="stylesheet" href="/app.css">
+</head>
+<body>
+<div class="layout">
+  <aside class="sides" id="sessionSide" hidden>
+    <div class="sides-head">
+      <span class="sides-title" title="点击折叠/展开会话列表">会话</span>
+      <button id="newSession" title="新建会话">＋</button>
+    </div>
+    <div class="sides-list" id="sessionList"></div>
+  </aside>
+  <div class="maincol">
+    <div class="modrow" id="modRow" hidden>
+      <span class="lbl">模型</span>
+      <select id="providerSel" title="LLM provider"></select>
+      <select id="modelSel" title="模型"></select>
+    </div>
+    <main id="msgs"></main>
+    <footer class="inputrow">
+      <textarea id="input" placeholder="对 agent 说话…（Shift+Enter 换行）" autocomplete="off" rows="1"></textarea>
+      <button id="send">发送</button>
+    </footer>
+  </div>
+</div>
+<script src="/app.js"></script>
+</body>
+</html>

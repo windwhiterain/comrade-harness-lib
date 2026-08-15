@@ -1,0 +1,11 @@
+{
+  "name": "comrade-harness-lib",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "comrade-harness 节点库：节点函数（buildSystemPrompt/callLLM/runTools/…）+ 资源（LLM/记忆/工具）+ 运行时壳（createHarness）。harness 的数据流由 core 的代码写成",
+  "files": ["*.ts", "tsconfig.json", "ui"],
+  "exports": {
+    ".": "./index.ts"
+  }
+}
