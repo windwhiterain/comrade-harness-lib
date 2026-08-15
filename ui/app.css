@@ -1,0 +1,345 @@
+:root { color-scheme: dark; }
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  font: 14px/1.6 system-ui, sans-serif;
+  background: #1e1a14;
+  color: #d4c8ae;
+}
+.layout { flex: 1; display: flex; min-height: 0; }
+/* 左侧会话栏（类似壳的 cores 列表）：会话列表 + 新建/折叠 */
+.sides {
+  width: 200px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: #1a1610;
+  border-right: 1px solid #342e22;
+}
+.sides.collapsed { width: 36px; }
+.sides.collapsed .sides-head { flex: 1; padding: 0; justify-content: center; border-bottom: none; }
+.sides.collapsed .sides-list, .sides.collapsed #newSession { display: none; }
+/* 折叠后标题占满整条窄 bar（点击任意处展开，与壳的折叠 bar 一致） */
+.sides.collapsed .sides-title {
+  flex: 1;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  writing-mode: vertical-rl;
+  letter-spacing: .14em;
+}
+.sides-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 10px;
+  border-bottom: 1px solid #342e22;
+}
+.sides-title { flex: 1; color: #6d6350; font-size: 12px; font-weight: 600; cursor: pointer; user-select: none; }
+.sides-title:hover { color: #d4c8ae; }
+.sides-head button {
+  background: #262117;
+  color: #d4c8ae;
+  border: 1px solid #342e22;
+  border-radius: 6px;
+  padding: 1px 8px;
+  font: 12px/1.6 system-ui, sans-serif;
+  cursor: pointer;
+}
+.sides-head button:hover { background: #302a1f; color: #d4c8ae; }
+.sides-list { flex: 1; overflow-y: auto; padding: 6px; display: flex; flex-direction: column; gap: 2px; }
+.side-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #d4c8ae;
+  font-size: 13px;
+  user-select: none;
+}
+.side-item:hover { background: #262117; }
+.side-item.active { background: #b8684020; color: #d4c8ae; }
+.si-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.si-count { color: #6d6350; font-size: 11px; flex-shrink: 0; }
+/* 右侧主列 */
+.maincol { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.modrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  background: #1a1610;
+  border-bottom: 1px solid #342e22;
+}
+.modrow .lbl { color: #6d6350; font-size: 12px; }
+.modrow select {
+  background: #262117;
+  color: #d4c8ae;
+  border: 1px solid #342e22;
+  border-radius: 8px;
+  padding: 3px 8px;
+  font: 12px/1.5 system-ui, sans-serif;
+  max-width: 340px;
+}
+.modrow select:focus { outline: none; border-color: #c9a55a; }
+#msgs {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  overflow-anchor: none; /* 防御：关闭浏览器滚动锚定（内容增长时它会自动调 scrollTop 保持视口稳定，与"贴底跟随"打架）；
+                            根治是工具结果默认折叠（长输出不再进页面）——用户拍板 */
+}
+.msg { display: flex; flex-direction: column; gap: 4px; } /* 每条消息 = 顶部折叠 bar（角色名）+ 内容 */
+.msg > .msgbox, .msg > .bubble { min-width: 0; } /* 内容占满消息列整宽（不浪费横向空间） */
+.msg.step { gap: 0; } /* 日志行：无 bar，紧凑 */
+.msg.system { align-items: center; }
+/* 大框顶部折叠 bar（与字段小框 .fld-head 同款原生 details/summary）：左键折叠/展开整卡，右键交给大框菜单 */
+.msg-head {
+  align-self: stretch;
+  font-size: 11px;
+  font-weight: 600;
+  color: #8a7f66;
+  letter-spacing: .5px;
+  user-select: none;
+  cursor: pointer;
+  padding: 1px 4px;
+}
+.msg-head:hover { color: #d4c8ae; }
+.msg-head::marker { color: #6d6350; }
+.msg.user > .msg-head { color: #c9a55a; } /* 用户 = 暖金 */
+.msg.toolgroup > .msg-head, .msg.tool > .msg-head { color: #c98a4b; } /* 工具 = 锈橙 */
+/* ---- 消息大框 / 字段小框：assistant = 一个 msgbox（含 reasoning/content/每个 tool_call 的 fld 小框），
+   tool 结果 = 一个 msgbox 组（每个 tool 消息一个 fld 小框）。大框右键 = 请求/截断，小框右键 = 删除/修改。 ---- */
+.msg.assistant { margin-bottom: 4px; }
+.msg.toolgroup { margin-bottom: 4px; }
+.msgbox {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: #1d1912;
+  border: 1px solid #3a3224;
+  border-radius: 10px;
+  padding: 6px 10px;
+}
+.fld {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  background: #262117;
+  border: 1px solid #342e22;
+  border-radius: 8px;
+  padding: 4px 8px;
+}
+.fld-head {
+  font-size: 11px;
+  font-weight: 600;
+  color: #8a7f66;
+  letter-spacing: .5px;
+  user-select: none;
+  cursor: pointer; /* details summary：点击折叠/展开，框的高度随内容而定 */
+}
+.fld-head::marker { color: #6d6350; }
+.msg.assistant .fld[data-field="content"] .fld-head { color: #b8914a; } /* 回复标题高亮，正文一眼可辨（仅 assistant 的 content；工具结果小框也是 content，靠 .msg 作用域区分） */
+.fld-body {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font: 12px/1.4 ui-monospace, SFMono-Regular, Consolas, "Courier New", monospace;
+  color: #c9bda0;
+}
+.fld .bubble { background: none; border: none; padding: 0; border-radius: 0; } /* content 小框内：markdown 样式保留，去掉气泡自身的底/框 */
+.fld-body.edit {
+  /* 原地修改：字段主体临时替换成文本框（Enter 提交，Shift+Enter 换行，Esc 取消） */
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  background: #1a1610;
+  border: 1px solid #443c2e;
+  border-radius: 8px;
+  color: #d4c8ae;
+  padding: 6px 8px;
+  font: 12px/1.4 ui-monospace, SFMono-Regular, Consolas, "Courier New", monospace;
+  resize: vertical;
+  min-height: 96px;
+  outline: none;
+}
+.fld-body.edit:focus { border-color: #c9a55a; }
+.msgbox .llmstat { margin: 2px 0 0; } /* LLM 统计 / 截断日志：assistant 大框内一行小字 */
+/* 单一全局右键菜单（#ctxMenu）：消息/字段/会话项共用，openMenu 动态构建 */
+.ctx-menu {
+  display: none;
+  position: fixed;
+  z-index: 10;
+  min-width: 140px;
+  flex-direction: column;
+  align-items: stretch;
+  background: #262117;
+  border: 1px solid #443c2e;
+  border-radius: 8px;
+  padding: 4px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .5);
+}
+.ctx-menu.show { display: flex; }
+.ctx-menu button {
+  background: none;
+  border: none;
+  text-align: left;
+  padding: 6px 10px;
+  border-radius: 5px;
+  color: #d4c8ae;
+  font-size: 12px;
+  cursor: pointer;
+  line-height: 1.4;
+}
+.ctx-menu button:hover { background: #302a1f; color: #d4c8ae; }
+.ctx-menu button.danger:hover { background: #8a3c2833; color: #c06040; }
+.ctx-menu button:disabled { opacity: .5; cursor: default; }
+.bubble {
+  padding: 5px 10px;
+  border-radius: 10px;
+  white-space: normal;
+  word-break: break-word;
+}
+.msg.user .bubble { background: #302a1e; color: #e0d6be; border-bottom-left-radius: 4px; }
+.msg.agent .bubble, .msg.assistant .bubble { background: #262117; border: 1px solid #342e22; border-bottom-left-radius: 4px; }
+.msg.system .bubble { background: none; color: #6d6350; font-size: 12px; padding: 2px 8px; }
+/* ---- markdown 渲染样式：不同 element 不同颜色（花花绿绿），紧凑排版 ---- */
+.bubble > :first-child { margin-top: 0; }
+.bubble > :last-child { margin-bottom: 0; }
+.bubble details { margin: 0; padding: 0; }
+.bubble summary { margin: 0; padding: 0; }
+.bubble p, .bubble ul, .bubble ol, .bubble pre, .bubble blockquote, .bubble table, .bubble h1, .bubble h2, .bubble h3, .bubble h4, .bubble h5, .bubble h6 { margin: 4px 0; }
+.bubble h1, .bubble h2, .bubble h3 { color: #c9a55a; font-weight: 600; line-height: 1.4; }
+.bubble h1 { font-size: 1.35em; border-bottom: 1px solid #4a3f2a; padding-bottom: 2px; }
+.bubble h2 { font-size: 1.2em; }
+.bubble h3 { font-size: 1.1em; }
+.bubble h4, .bubble h5, .bubble h6 { font-size: 1em; color: #b8914a; }
+.bubble ul, .bubble ol { padding-left: 22px; }
+.bubble li { margin: 2px 0; }
+.bubble li::marker { color: #c9a55a; }
+.bubble a { color: #7fb0e0; text-decoration: none; }
+.bubble a:hover { text-decoration: underline; }
+.bubble strong { color: #e8d9a8; }
+.bubble em { color: #d9c79a; }
+.bubble del { color: #8a7f66; }
+.bubble hr { border: none; border-top: 1px solid #443c2e; margin: 6px 0; }
+.bubble blockquote { margin: 4px 0; padding: 2px 8px; border-left: 3px solid #c98a4b; background: #241f16; border-radius: 0 8px 8px 0; color: #c9a87e; }
+.bubble blockquote p { margin: 2px 0; }
+.bubble code {
+  font: 12px/1.4 ui-monospace, SFMono-Regular, Consolas, "Courier New", monospace;
+  background: #262117;
+  color: #a3c97f;
+  border: 1px solid #342e22;
+  border-radius: 4px;
+  padding: 1px 4px;
+}
+.bubble pre {
+  background: #171310;
+  border: 1px solid #342e22;
+  border-radius: 8px;
+  padding: 6px 8px;
+  overflow-x: auto;
+  color: #9db38a;
+}
+.bubble pre code { background: none; border: none; padding: 0; color: inherit; font-size: 12px; }
+.bubble table { border-collapse: collapse; font-size: 13px; }
+.bubble th, .bubble td { border: 1px solid #443c2e; padding: 4px 10px; text-align: left; }
+.bubble th { background: #262117; color: #c9a55a; }
+.bubble tr:nth-child(even) td { background: #221d15; }
+.bubble img { max-width: 100%; border-radius: 8px; }
+.stepbox {
+  align-self: stretch; /* 撑满消息列整宽（即使 .msg 子项默认 stretch 已覆盖，保留作显式守卫） */
+  background: #1e1a14;
+  border: 1px solid #342e22;
+  border-radius: 10px;
+  font-size: 12px;
+  color: #6d6350;
+}
+.stepbox summary { cursor: pointer; padding: 3px 8px; color: #c9a55a; user-select: none; }
+.stepbox summary:hover { color: #d4c8ae; }
+.stepbox[open] summary { border-bottom: 1px dashed #342e22; }
+.llmstat {
+  align-self: stretch; /* 一行信息，撑满消息列整宽，与步骤卡一致 */
+  font-size: 11px;
+  color: #6d6350;
+  padding: 2px 10px;
+}
+.stepbox pre {
+  margin: 0;
+  padding: 5px 8px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 240px;
+  overflow: auto;
+  font: 11px/1.5 ui-monospace, SFMono-Regular, Consolas, "Courier New", monospace;
+  color: #6d6350;
+}
+.inputrow {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 16px;
+  border-top: 1px solid #342e22;
+  background: #262117;
+}
+.btnrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+#input {
+  flex: 1;
+  background: #1a1610;
+  border: 1px solid #342e22;
+  border-radius: 10px;
+  color: #d4c8ae;
+  padding: 10px 14px;
+  font: inherit;
+  outline: none;
+  resize: none; /* textarea：多行输入（Shift+Enter 换行），自适应高度上限 160px，超出滚动 */
+  max-height: 160px;
+  overflow-y: auto;
+  line-height: 1.5;
+}
+#input:focus { border-color: #c9a55a; }
+#send {
+  flex: 1; /* 发送占主位，其余按钮固定宽 */
+  background: #4b5030; /* 军绿（苏联工业风：低饱和去鲜艳，4px 小圆角） */
+  color: #d4ccaa;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 20px;
+  font: inherit;
+  cursor: pointer;
+}
+#send:disabled, #pauseBtn:disabled, #stopPause:disabled { opacity: .5; cursor: default; }
+#pauseBtn {
+  background: none;
+  border: 1px solid #4a4630; /* 暗橄榄边框（苏联工业风） */
+  color: #a89f72; /* 灰卡其 */
+  border-radius: 4px;
+  padding: 8px 16px;
+  font: inherit;
+  cursor: pointer;
+}
+#pauseBtn.on { background: #3a3f24; border-color: #8a8448; color: #d8d0a8; } /* 模式开启：步进中（军绿高亮） */
+#stopPause {
+  background: none;
+  border: 1px solid #4a4630;
+  color: #a89f72;
+  border-radius: 4px;
+  padding: 8px 16px;
+  font: inherit;
+  cursor: pointer;
+}
+#stopPause.stop { background: #7a4632; color: #d8d0b0; border: none; } /* busy = 「停止」（锈红，非亮红），空闲「继续」态中性 */
