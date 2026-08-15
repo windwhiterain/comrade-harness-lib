@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>core · 对话</title>
+<link rel="stylesheet" href="/app.css">
+</head>
+<body>
+<div class="layout">
+  <aside class="sides" id="sessionSide" hidden>
+    <div class="sides-head">
+      <span class="sides-title" title="点击折叠/展开会话列表">会话</span>
+      <button id="newSession" title="新建会话">＋</button>
+    </div>
+    <div class="sides-list" id="sessionList"></div>
+  </aside>
+  <div class="maincol">
+    <div class="modrow" id="modRow" hidden>
+      <span class="lbl">模型</span>
+      <select id="providerSel" title="LLM provider"></select>
+      <select id="modelSel" title="模型"></select>
+    </div>
+    <main id="msgs"></main>
+    <footer class="inputrow">
+      <textarea id="input" placeholder="对 agent 说话…（Shift+Enter 换行；留空发送 = 空消息，模型接着继续）" autocomplete="off" rows="1"></textarea>
+      <div class="btnrow">
+        <button id="pauseBtn" title="步进：开启逐步暂停（agent 每完成一步后停下来等确认）；开启后按钮变「步进中」，再点关闭；暂停挂起时变「继续 ⏵」，点击唤醒">步进</button>
+        <button id="send">发送</button>
+        <button id="stopPause" disabled title="对最后一条消息重新生成回复（busy 时变「停止」）">继续</button>
+      </div>
+    </footer>
+  </div>
+</div>
+<script src="/vendor/markdown-it.min.js"></script>
+<script src="/app.js"></script>
+</body>
+</html>
